@@ -208,10 +208,10 @@ window.addEventListener('mousemove', (e) => {
 });
 
 const handleTouch = (e) => {
-    if (player) {
-        // Prevent scrolling while playing
-        e.preventDefault();
-        const touch = e.touches[0];
+    if (gameActive && player) {
+        // Only prevent default and track movement when game is live
+        if (e.cancelable) e.preventDefault();
+        const touch = e.touches ? e.touches[0] : e;
         player.targetX = touch.clientX;
         player.targetY = touch.clientY;
     }
@@ -219,6 +219,12 @@ const handleTouch = (e) => {
 
 window.addEventListener('touchstart', handleTouch, { passive: false });
 window.addEventListener('touchmove', handleTouch, { passive: false });
+window.addEventListener('pointermove', (e) => {
+    if (gameActive && player && e.pointerType === 'mouse') {
+        player.targetX = e.clientX;
+        player.targetY = e.clientY;
+    }
+});
 
 window.addEventListener('keydown', (e) => {
 
@@ -237,9 +243,14 @@ startBtn.addEventListener('click', () => {
     animate();
 });
 
-restartBtn.addEventListener('click', () => {
+restartBtn.addEventListener('pointerdown', () => {
     gameOverScreen.classList.add('hidden');
     gameActive = true;
     init();
     animate();
+});
+
+// Keep click as fallback
+restartBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
 });
